@@ -9,7 +9,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"net/http"
 	"os"
 )
 import _ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -41,8 +40,11 @@ func main() {
 	server.Use(session.Middleware(sessions.NewCookieStore([]byte(config.CookieSecret))))
 	server.Use(middleware.CheckLoginMiddleware)
 
+	server.Static("/", config.StaticDir)
+
 	server.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		return c.Redirect(301, "/index.html")
+		//return c.String(http.StatusOK, "Hello, World!")
 	})
 	startupAPIService()
 	server.Logger.Fatal(server.Start(":1323"))

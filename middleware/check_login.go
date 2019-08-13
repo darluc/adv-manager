@@ -8,7 +8,8 @@ import (
 
 func CheckLoginMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if c.Request().RequestURI != "/api/users/login" {
+		uri := c.Request().RequestURI
+		if uri != "/api/users/login" && uri != "/" && uri != "/index.html" {
 			sess, _ := session.Get("session", c)
 			if userId := sess.Values["userId"]; userId != nil {
 				if userId.(int) > 0 {

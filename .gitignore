@@ -1,2 +1,3 @@
 *.paw
 config.json
+dist/

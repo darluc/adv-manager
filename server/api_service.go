@@ -11,6 +11,15 @@ import (
 	"strings"
 )
 
+func responseData(value interface{}) map[string]interface{} {
+	switch value.(type) {
+	case bool:
+		return map[string]interface{}{"success": value}
+	default:
+		return map[string]interface{}{"data": value,}
+	}
+}
+
 func startupAPIService() {
 	postService := service.NewPostService(db)
 
@@ -18,14 +27,14 @@ func startupAPIService() {
 	server.GET("/api/posts", func(c echo.Context) error {
 		pager := new(formdata.Pager)
 		c.Bind(pager)
-		return c.JSON(http.StatusOK, postService.GetPostList(pager))
+		return c.JSON(http.StatusOK, responseData(postService.GetPostList(pager)))
 	})
 
 	// set adv json for specified post
 	server.POST("/api/posts/ads", func(c echo.Context) error {
 		postAdvInfo := new(formdata.PostAdvInfo)
 		c.Bind(postAdvInfo)
-		return c.JSON(http.StatusOK, postService.SetPostAdvJSON(postAdvInfo))
+		return c.JSON(http.StatusOK, responseData(postService.SetPostAdvJSON(postAdvInfo)))
 	})
 
 	// get adv json for specified post
@@ -37,7 +46,7 @@ func startupAPIService() {
 		refURI := strings.Trim(c.Request().Referer(), "/")
 		uriParts := strings.Split(refURI, "/")
 		mdFileName := uriParts[len(uriParts)-1] + ".md"
-		return c.JSON(http.StatusOK, postService.GetPostAds(mdFileName))
+		return c.JSON(http.StatusOK, responseData(postService.GetPostAds(mdFileName)))
 	})
 
 	userService := service.NewUserService(db)
@@ -59,7 +68,7 @@ func startupAPIService() {
 			if err != nil {
 				return &echo.HTTPError{Code: http.StatusInternalServerError, Message: err.Error()}
 			}
-			return c.JSON(http.StatusOK, map[string]string{"username": user.Username, "name": user.Name})
+			return c.JSON(http.StatusOK, responseData(map[string]string{"username": user.Username, "name": user.Name}))
 		} else {
 			var errMessage string
 			if err == nil {

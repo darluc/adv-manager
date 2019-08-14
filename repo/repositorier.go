@@ -1,6 +1,9 @@
 package repo
 
-import "github.com/jinzhu/gorm"
+import (
+	"adv/model"
+	"github.com/jinzhu/gorm"
+)
 
 type Repositorier interface {
 	Connection() *gorm.DB
@@ -19,6 +22,6 @@ func (repo *AbstractRepo) SetConnection(db *gorm.DB) {
 }
 
 func (repo *AbstractRepo) getList(page int, pageSize int, out interface{}) (count int) {
-	repo.Connection().Offset((page - 1) * pageSize).Limit(pageSize).Find(out).Count(&count)
+	repo.Connection().Model(model.Post{}).Count(&count).Offset((page - 1) * pageSize).Limit(pageSize).Find(out)
 	return
 }

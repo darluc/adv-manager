@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 )
 
 type Config struct {
@@ -32,4 +33,17 @@ func FromJsonFile(filepath string) CfgFunc {
 			return err
 		}
 	}
+}
+
+func FromEnv(config *Config) error {
+	if db := os.Getenv("ADV_DATABASE"); db != "" {
+		config.DbFile = db
+	}
+	if secret := os.Getenv("ADV_COOKIE_SECRET"); secret != "" {
+		config.CookieSecret = secret
+	}
+	if staticDir := os.Getenv("STATIC_DIR"); staticDir != "" {
+		config.StaticDir = staticDir
+	}
+	return nil
 }

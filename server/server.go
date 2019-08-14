@@ -29,7 +29,7 @@ func main() {
 		os.Exit(-1)
 	}
 	// init config
-	config = serverConfig.LoadConfig(serverConfig.FromJsonFile(configFile))
+	config = serverConfig.LoadConfig(serverConfig.FromJsonFile(configFile), serverConfig.FromEnv)
 
 	// open database
 	var dbError error

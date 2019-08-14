@@ -17,10 +17,14 @@ var db *gorm.DB
 var server *echo.Echo
 var config *serverConfig.Config
 
-var configFile string
+var (
+	debug      bool
+	configFile string
+)
 
 func main() {
 	flag.StringVar(&configFile, "f", "", "config file")
+	flag.BoolVar(&debug, "d", false, "enable debugging")
 	if !argsChecked() {
 		os.Exit(-1)
 	}
@@ -35,6 +39,10 @@ func main() {
 		os.Exit(-1)
 	}
 	defer db.Close()
+	if debug {
+		// gorm debug mode
+		db.LogMode(true)
+	}
 
 	server = echo.New()
 	server.Use(session.Middleware(sessions.NewCookieStore([]byte(config.CookieSecret))))

@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-EXPOSE 1323
+EXPOSE 1323/tcp
 
 RUN mkdir /data
 ENV dir /opt/adv/

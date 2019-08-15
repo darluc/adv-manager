@@ -5,7 +5,7 @@ CP=cp
 
 docker:
 	CGO_ENABLED=1 $(GO) build -a -installsuffix cgo -ldflags '-s' -o ./dist/adv-manager ./server/*.go
-	docker build -t 'darluc/adv-manager:1.0' -f docker/Dockerfile .
+	docker build -t 'darluc/adv-manager:1.1' -f docker/Dockerfile .
 
 
 server:

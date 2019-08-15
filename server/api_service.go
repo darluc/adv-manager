@@ -2,6 +2,7 @@ package main
 
 import (
 	"adv/formdata"
+	"adv/middleware"
 	"adv/service"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -38,19 +39,29 @@ func startupAPIService() {
 	})
 
 	// get adv json for specified post
+	middleware.AddExcludeURI("/api/posts/adv")
 	server.GET("/api/posts/adv", func(c echo.Context) error {
-		host := c.Request().Host
-		if matched, _ := regexp.Match("\\bzvz.im\\b", []byte(host)); matched {
-			c.Response().Header().Set("Access-Control-Allow-Origin", "https://"+host)
-		}
 		refURI := strings.Trim(c.Request().Referer(), "/")
 		uriParts := strings.Split(refURI, "/")
 		mdFileName := uriParts[len(uriParts)-1] + ".md"
 		return c.JSON(http.StatusOK, responseData(postService.GetPostAds(mdFileName)))
+	}, func(next echo.HandlerFunc) echo.HandlerFunc {
+		hostRegex, err := regexp.Compile("^https?://[^/]+/?")
+		if err != nil {
+			panic(err)
+		}
+		return func(c echo.Context) error {
+			host := hostRegex.Find([]byte(c.Request().Referer()))
+			if matched, _ := regexp.Match("\\bzvz.im\\b", host); matched {
+				c.Response().Header().Set("Access-Control-Allow-Origin", strings.Trim(string(host), "/"))
+			}
+			return next(c)
+		}
 	})
 
 	userService := service.NewUserService(db)
 
+	middleware.AddExcludeURI("/api/users/login")
 	server.POST("/api/users/login", func(c echo.Context) error {
 		loginForm := new(formdata.LoginForm)
 		c.Bind(loginForm)

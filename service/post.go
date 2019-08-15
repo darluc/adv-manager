@@ -27,10 +27,13 @@ func (ps *PostService) GetPostList(pager *formdata.Pager) map[string]interface{}
 func (ps *PostService) SetPostAdvJSON(advInfo *formdata.PostAdvInfo) bool {
 	post := ps.repo.GetPost(advInfo.PostId)
 	if post != nil {
-		if jsonInfo, err := json.Marshal(advInfo.AdsInfo); err == nil {
-			post.AdvJson = string(jsonInfo)
-			return ps.repo.Save(post)
+		post.Ads = make([]string, 0)
+		for _, adv := range advInfo.AdsInfo {
+			if adv != "" {
+				post.Ads = append(post.Ads, adv)
+			}
 		}
+		return ps.repo.Save(post)
 	}
 	return false
 }

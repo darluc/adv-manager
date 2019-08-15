@@ -47,6 +47,7 @@ func main() {
 	server = echo.New()
 	server.Use(session.Middleware(sessions.NewCookieStore([]byte(config.CookieSecret))))
 	server.Use(middleware.CheckLoginMiddleware)
+	middleware.AddExcludeURI("/", "/index.html")
 
 	server.Static("/", config.StaticDir)
 

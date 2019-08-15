@@ -9,6 +9,16 @@ type Post struct {
 	Ads      []string `gorm:"-" json:"adv_info"`
 }
 
+func (p *Post) BeforeSave() (err error) {
+	if len(p.Ads) > 0 {
+		adsBytes, _ := json.Marshal(p.Ads)
+		p.AdvJson = string(adsBytes)
+	} else {
+		p.AdvJson = "[]"
+	}
+	return
+}
+
 func (p *Post) AfterFind() (err error) {
 	if p.AdvJson != "" {
 		p.Ads = make([]string, 0)

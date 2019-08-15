@@ -6,18 +6,30 @@ import (
 	"net/http"
 )
 
+var excludeURI []string
+
+func AddExcludeURI(uri ...string) {
+	if excludeURI == nil {
+		excludeURI = make([]string, 0)
+	}
+	excludeURI = append(excludeURI, uri...)
+}
+
 func CheckLoginMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		uri := c.Request().RequestURI
-		if uri != "/api/users/login" && uri != "/" && uri != "/index.html" {
-			sess, _ := session.Get("session", c)
-			if userId := sess.Values["userId"]; userId != nil {
-				if userId.(int) > 0 {
-					return next(c)
-				}
+		uri := c.Request().URL.Path
+		for _, exclude := range excludeURI {
+			if uri == exclude {
+				return next(c)
 			}
-			return &echo.HTTPError{Code: http.StatusUnauthorized, Message: "user not login"}
 		}
-		return next(c)
+
+		sess, _ := session.Get("session", c)
+		if userId := sess.Values["userId"]; userId != nil {
+			if userId.(int) > 0 {
+				return next(c)
+			}
+		}
+		return &echo.HTTPError{Code: http.StatusUnauthorized, Message: "user not login"}
 	}
 }

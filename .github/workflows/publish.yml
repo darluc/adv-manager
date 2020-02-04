@@ -1,0 +1,48 @@
+name: Go
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get tag name
+      id: get_tag_name
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+        
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ steps.get_tag_name.outputs.VERSION }}
+
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+
+    - name: Build
+      run: make server && make docker
+    
+    - name: Publish Docker
+      uses: elgohr/Publish-Docker-Github-Action@2.12
+      with:
+        # The name of the image you would like to push
+        name: "darluc/adv-manager"
+        # The login username for the registry
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+        # Use dockerfile when you would like to explicitly build a Dockerfile
+        dockerfile: "./docker/Dockerfile"
+        # Use tag_names when you want to push tags/release by their git name
+        tag_names: ${{ steps.get_tag_name.outputs.VERSION }}

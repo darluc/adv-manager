@@ -32,7 +32,7 @@ jobs:
         fi
 
     - name: Build
-      run: make server && make docker
+      run: make server
 
     - name: Publish Docker
       uses: elgohr/Publish-Docker-Github-Action@2.12
@@ -42,5 +42,6 @@ jobs:
         # The login username for the registry
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+        dockerfile: "./docker/Dockerfile"
         # Use tag_names when you want to push tags/release by their git name
         tag_names: ${{ steps.get_tag_name.outputs.VERSION }}

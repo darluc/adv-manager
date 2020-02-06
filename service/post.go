@@ -1,17 +1,23 @@
 package service
 
 import (
-	"adv/formdata"
+	"adv/form"
 	"adv/repo"
 	"encoding/json"
 	"github.com/jinzhu/gorm"
 )
 
-type PostService struct {
-	repo *repo.PostRepo
+type PostService interface {
+	GetPostList(pager *form.Pager) map[string]interface{}
+	SetPostAdvJSON(advInfo *form.PostAdvInfo) bool
+	GetPostAds(filename string) []string
 }
 
-func (ps *PostService) GetPostList(pager *formdata.Pager) map[string]interface{} {
+type postService struct {
+	repo repo.PostRepo
+}
+
+func (ps *postService) GetPostList(pager *form.Pager) map[string]interface{} {
 	if pager.Page == 0 {
 		pager.Page = 1
 	}
@@ -24,7 +30,7 @@ func (ps *PostService) GetPostList(pager *formdata.Pager) map[string]interface{}
 	}
 }
 
-func (ps *PostService) SetPostAdvJSON(advInfo *formdata.PostAdvInfo) bool {
+func (ps *postService) SetPostAdvJSON(advInfo *form.PostAdvInfo) bool {
 	post := ps.repo.GetPost(advInfo.PostId)
 	if post != nil {
 		post.Ads = make([]string, 0)
@@ -38,7 +44,7 @@ func (ps *PostService) SetPostAdvJSON(advInfo *formdata.PostAdvInfo) bool {
 	return false
 }
 
-func (ps *PostService) GetPostAds(filename string) []string {
+func (ps *postService) GetPostAds(filename string) []string {
 	if post := ps.repo.GetPostByFilename(filename); post != nil {
 		ads := make([]string, 0)
 		json.Unmarshal([]byte(post.AdvJson), &ads)
@@ -48,8 +54,8 @@ func (ps *PostService) GetPostAds(filename string) []string {
 	}
 }
 
-func NewPostService(db *gorm.DB) *PostService {
-	ps := &PostService{}
+func NewPostService(db *gorm.DB) PostService {
+	ps := new(postService)
 	ps.repo = repo.NewPostRepo(db)
 	return ps
 }

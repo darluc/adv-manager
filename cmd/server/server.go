@@ -3,6 +3,7 @@ package main
 import (
 	serverConfig "adv/config"
 	"adv/middleware"
+	"adv/controller"
 	"flag"
 	"fmt"
 	"github.com/gorilla/sessions"
@@ -13,8 +14,6 @@ import (
 )
 import _ "github.com/jinzhu/gorm/dialects/sqlite"
 
-var db *gorm.DB
-var server *echo.Echo
 var config *serverConfig.Config
 
 var (
@@ -32,8 +31,7 @@ func main() {
 	config = serverConfig.LoadConfig(serverConfig.FromJsonFile(configFile), serverConfig.FromEnv)
 
 	// open database
-	var dbError error
-	db, dbError = gorm.Open("sqlite3", "file:"+config.DbFile)
+	db, dbError := gorm.Open("sqlite3", "file:"+config.DbFile)
 	if dbError != nil {
 		fmt.Printf("database open error: %s", dbError)
 		os.Exit(-1)
@@ -44,19 +42,19 @@ func main() {
 		db.LogMode(true)
 	}
 
-	server = echo.New()
-	server.Use(session.Middleware(sessions.NewCookieStore([]byte(config.CookieSecret))))
-	server.Use(middleware.CheckLoginMiddleware)
+	s := echo.New()
+	s.Use(session.Middleware(sessions.NewCookieStore([]byte(config.CookieSecret))))
+	s.Use(middleware.CheckLoginMiddleware)
 	middleware.AddExcludeURI("/", "/index.html")
 
-	server.Static("/", config.StaticDir)
+	s.Static("/", config.StaticDir)
 
-	server.GET("/", func(c echo.Context) error {
+	s.GET("/", func(c echo.Context) error {
 		return c.Redirect(301, "/index.html")
 		//return c.String(http.StatusOK, "Hello, World!")
 	})
-	startupAPIService()
-	server.Logger.Fatal(server.Start(":1323"))
+	controller.ApiService(s, db)
+	s.Logger.Fatal(s.Start(":1323"))
 }
 
 func argsChecked() bool {

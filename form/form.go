@@ -1,4 +1,4 @@
-package formdata
+package form
 
 type Pager struct {
 	Page     int `json:"page" query:"page"`

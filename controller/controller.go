@@ -1,10 +1,11 @@
-package main
+package controller
 
 import (
-	"adv/formdata"
+	"adv/form"
 	"adv/middleware"
 	"adv/service"
 	"github.com/gorilla/sessions"
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"net/http"
@@ -21,26 +22,26 @@ func responseData(value interface{}) map[string]interface{} {
 	}
 }
 
-func startupAPIService() {
+func ApiService(s *echo.Echo, db *gorm.DB) {
 	postService := service.NewPostService(db)
 
 	// get posts list
-	server.GET("/api/posts", func(c echo.Context) error {
-		pager := new(formdata.Pager)
+	s.GET("/api/posts", func(c echo.Context) error {
+		pager := new(form.Pager)
 		c.Bind(pager)
 		return c.JSON(http.StatusOK, responseData(postService.GetPostList(pager)))
 	})
 
 	// set adv json for specified post
-	server.POST("/api/posts/ads", func(c echo.Context) error {
-		postAdvInfo := new(formdata.PostAdvInfo)
+	s.POST("/api/posts/ads", func(c echo.Context) error {
+		postAdvInfo := new(form.PostAdvInfo)
 		c.Bind(postAdvInfo)
 		return c.JSON(http.StatusOK, responseData(postService.SetPostAdvJSON(postAdvInfo)))
 	})
 
 	// get adv json for specified post
 	middleware.AddExcludeURI("/api/posts/adv")
-	server.GET("/api/posts/adv", func(c echo.Context) error {
+	s.GET("/api/posts/adv", func(c echo.Context) error {
 		refURI := strings.Trim(c.Request().Referer(), "/")
 		uriParts := strings.Split(refURI, "/")
 		mdFileName := uriParts[len(uriParts)-1] + ".md"
@@ -62,8 +63,8 @@ func startupAPIService() {
 	userService := service.NewUserService(db)
 
 	middleware.AddExcludeURI("/api/users/login")
-	server.POST("/api/users/login", func(c echo.Context) error {
-		loginForm := new(formdata.LoginForm)
+	s.POST("/api/users/login", func(c echo.Context) error {
+		loginForm := new(form.LoginForm)
 		c.Bind(loginForm)
 		user, err := userService.Login(loginForm.Username, loginForm.Password)
 		if user != nil {

@@ -5,11 +5,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type UserRepo struct {
-	AbstractRepo
+type UserRepo interface {
+	GetUserByName(username string) *model.User
 }
 
-func (repo *UserRepo) GetUserByName(username string) *model.User {
+type userRepo struct {
+	repo
+}
+
+func (repo *userRepo) GetUserByName(username string) *model.User {
 	user := new(model.User)
 	if repo.Connection().Where("username = ?", username).First(user).Error == nil {
 		return user
@@ -17,8 +21,8 @@ func (repo *UserRepo) GetUserByName(username string) *model.User {
 	return nil
 }
 
-func NewUserRepo(db *gorm.DB) *UserRepo {
-	repo := new(UserRepo)
+func NewUserRepo(db *gorm.DB) UserRepo {
+	repo := new(userRepo)
 	repo.SetConnection(db)
 	return repo
 }

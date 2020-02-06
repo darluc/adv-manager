@@ -8,11 +8,15 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type UserService struct {
-	repo *repo.UserRepo
+type UserService interface {
+	Login(username string, password string) (user *model.User, err error)
 }
 
-func (us *UserService) Login(username string, password string) (user *model.User, err error) {
+type userService struct {
+	repo repo.UserRepo
+}
+
+func (us *userService) Login(username string, password string) (user *model.User, err error) {
 	user = us.repo.GetUserByName(username)
 	if user != nil && helper.CompareHashAndPassword([]byte(user.Password), []byte(password)) {
 		return user, nil
@@ -20,8 +24,8 @@ func (us *UserService) Login(username string, password string) (user *model.User
 	return nil, fmt.Errorf("invalid username or bad password")
 }
 
-func NewUserService(db *gorm.DB) *UserService {
-	us := new(UserService)
-	us.repo = repo.NewUserRepo(db)
-	return us
+func NewUserService(db *gorm.DB) UserService {
+	service := new(userService)
+	service.repo = repo.NewUserRepo(db)
+	return service
 }

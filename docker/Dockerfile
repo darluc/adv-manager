@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM frolvlad/alpine-glibc:latest
 
 EXPOSE 1323/tcp
 

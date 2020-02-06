@@ -8,7 +8,7 @@ docker:
 	docker build -t 'darluc/adv-manager:1.1' -f docker/Dockerfile .
 
 server:
-	$(GO) build -o ./dist/adv-manager-server ./server/*.go
+	$(GO) build -o ./dist/adv-manager-server ./cmd/server/server.go
 	$(CP) -r public ./dist/
 
 clean:

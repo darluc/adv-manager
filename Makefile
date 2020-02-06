@@ -4,7 +4,7 @@ CP=cp
 .PHONY: clean server docker
 
 docker:
-	CGO_ENABLED=1 $(GO) build -a -installsuffix cgo -ldflags '-s' -o ./dist/adv-manager ./server/*.go
+	CGO_ENABLED=1 $(GO) build -a -installsuffix cgo -ldflags '-s' -o ./dist/adv-manager ./cmd/server/server.go
 	docker build -t 'darluc/adv-manager:1.1' -f docker/Dockerfile .
 
 server:

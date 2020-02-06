@@ -44,4 +44,4 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
         dockerfile: "./docker/Dockerfile"
         # Use tag_names when you want to push tags/release by their git name
-        tag_names: ${{ steps.get_tag_name.outputs.VERSION }}
+        tags: "latest,${{ steps.get_tag_name.outputs.VERSION }}"
